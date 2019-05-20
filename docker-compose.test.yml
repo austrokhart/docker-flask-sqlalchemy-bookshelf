@@ -1,0 +1,61 @@
+
+version: "3"
+
+
+services:
+
+
+  db:
+
+    image: "mariadb:10"
+
+    volumes:
+      - "mariadb-test:/var/lib/mysql"
+
+    networks:
+      - "common"
+
+    environment:
+      MYSQL_DATABASE: "bookshelf"
+      MYSQL_USER: "bookshelf"
+      MYSQL_PASSWORD: "bookshelf"
+
+    restart: "no"
+
+
+  uwsgi:
+
+    depends_on:
+      - "db"
+
+    build:
+      context: .
+      dockerfile: "uwsgi.dockerfile"
+
+    command: >
+      bash -c "dockerize -template ./uwsgi.ini.template:./uwsgi.ini
+      && dockerize -wait tcp://db:3306
+      && python ./database_init.py
+      && python ./tests_run.py"
+
+    networks:
+      - "common"
+
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "9000"
+      DB_HOST: "db"
+      DB_PORT: "3306"
+      DB_NAME: "bookshelf"
+      DB_USER: "bookshelf"
+      DB_PASSWORD: "bookshelf"
+
+    restart: "no"
+
+
+volumes:
+  mariadb-test:
+
+
+networks:
+  common:

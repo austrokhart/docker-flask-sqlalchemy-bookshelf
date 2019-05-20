@@ -1,0 +1,90 @@
+
+version: "3"
+
+
+services:
+
+
+  db:
+
+    image: "mariadb:10"
+
+    volumes:
+      - "mariadb:/var/lib/mysql"
+
+    networks:
+      - "common"
+
+    environment:
+      MYSQL_ROOT_PASSWORD: "password"
+      MYSQL_DATABASE: "bookshelf"
+      MYSQL_USER: "bookshelf"
+      MYSQL_PASSWORD: "bookshelf"
+
+    restart: "always"
+
+
+  uwsgi:
+
+    depends_on:
+      - "db"
+
+    build:
+      context: "."
+      dockerfile: "uwsgi.dockerfile"
+
+    command: >
+      bash -c "dockerize -template ./uwsgi.ini.template:./uwsgi.ini
+      && dockerize -wait tcp://db:3306
+      && python ./database_init.py
+      && uwsgi ./uwsgi.ini"
+
+    networks:
+      - "common"
+
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "9000"
+      DB_HOST: "db"
+      DB_PORT: "3306"
+      DB_NAME: "bookshelf"
+      DB_USER: "bookshelf"
+      DB_PASSWORD: "bookshelf"
+
+    restart: "always"
+
+
+  nginx:
+
+    depends_on:
+      - "uwsgi"
+
+    build:
+      context: "."
+      dockerfile: "nginx.dockerfile"
+
+    command: >
+      bash -c "dockerize -template ./default.conf.template:./default.conf
+      && dockerize -wait tcp://uwsgi:9000
+      && exec nginx -g 'daemon off;'"
+
+    networks:
+      - "common"
+
+    ports:
+      - "80:80"
+
+    environment:
+      PORT: "80"
+      UWSGI_HOST: "uwsgi"
+      UWSGI_PORT: "9000"
+
+    restart: "always"
+
+
+volumes:
+  mariadb:
+
+
+networks:
+  common:

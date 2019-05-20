@@ -1,0 +1,13 @@
+
+server {
+
+    listen       {{ .Env.PORT }};
+    server_name  localhost;
+
+    charset utf8;
+
+    location / {
+        uwsgi_pass {{ .Env.UWSGI_HOST }}:{{ .Env.UWSGI_PORT }};
+        include uwsgi_params;
+    }
+}

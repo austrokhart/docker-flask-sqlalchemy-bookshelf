@@ -1,0 +1,14 @@
+
+/.gitignore
+
+/.idea/
+
+venv/
+
+*.pyc
+__pycache__/
+
+*.egg-info/
+
+/app/uwsgi.ini
+/nginx/default.conf

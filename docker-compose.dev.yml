@@ -1,0 +1,17 @@
+
+version: "3"
+
+
+services:
+
+
+  uwsgi:
+
+    command: >
+      bash -c "dockerize -template ./uwsgi.dev.ini.template:./uwsgi.ini
+      && dockerize -wait tcp://db:3306
+      && python ./database_init.py
+      && uwsgi ./uwsgi.ini"
+
+    volumes:
+      - "./app/:/usr/src/app/"

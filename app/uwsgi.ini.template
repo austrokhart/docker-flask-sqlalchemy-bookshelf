@@ -1,0 +1,6 @@
+[uwsgi]
+
+socket    = ${HOST}:${PORT}
+protocol  = uwsgi
+wsgi-file = app.py
+callable  = app

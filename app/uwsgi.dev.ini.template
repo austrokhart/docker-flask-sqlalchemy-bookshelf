@@ -1,0 +1,7 @@
+[uwsgi]
+
+socket        = {{ .Env.HOST }}:{{ .Env.PORT }}
+protocol      = uwsgi
+wsgi-file     = app.py
+callable      = app
+py-autoreload = 1
